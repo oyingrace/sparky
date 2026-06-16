@@ -1,6 +1,9 @@
 "use client";
 
 import { AppNav } from "@/components/AppNav";
+import { OddsLine } from "@/components/OddsLine";
+import { PageHeader } from "@/components/PageHeader";
+import { StatusPill } from "@/components/StatusPill";
 import { useCurrentAccount, useDAppKit } from "@mysten/dapp-kit-react";
 import { Transaction } from "@mysten/sui/transactions";
 import { useParams } from "next/navigation";
@@ -62,7 +65,7 @@ export default function MarketDetailPage() {
       });
       const result = await dAppKit.signAndExecuteTransaction({ transaction: tx });
       if (result.$kind === "FailedTransaction") {
-        throw new Error(result.FailedTransaction.status.error?.message ?? "Tx failed");
+        throw new Error(result.FailedTransaction.status.error?.message ?? "Transaction failed");
       }
       setStatus(`Bet placed: ${result.Transaction.digest}`);
     } catch (err) {
@@ -84,7 +87,7 @@ export default function MarketDetailPage() {
       });
       const result = await dAppKit.signAndExecuteTransaction({ transaction: tx });
       if (result.$kind === "FailedTransaction") {
-        throw new Error(result.FailedTransaction.status.error?.message ?? "Tx failed");
+        throw new Error(result.FailedTransaction.status.error?.message ?? "Transaction failed");
       }
       setStatus(`Winnings claimed: ${result.Transaction.digest}`);
     } catch (err) {
@@ -109,63 +112,79 @@ export default function MarketDetailPage() {
     <>
       <AppNav />
       <main>
-        <h1 style={{ marginTop: 0 }}>Market</h1>
+        <PageHeader
+          eyebrow="Wager"
+          title="Market detail"
+          lead={detail.disclaimer}
+        />
 
-        <section className="card">
-        <p className="muted">Status: {detail.market.status}</p>
-        <p className="muted">
-          YES: {(Number(detail.market.yesPool) / 1e9).toFixed(4)} SUI · NO:{" "}
-          {(Number(detail.market.noPool) / 1e9).toFixed(4)} SUI
-        </p>
-        {detail.impliedOdds?.yesToNo && (
-          <p className="muted">Implied YES:NO ≈ 1:{detail.impliedOdds.yesToNo}</p>
-        )}
-        <p className="muted">{detail.disclaimer}</p>
-      </section>
-
-      {detail.market.status === "open" && (
-        <form className="card" onSubmit={placeBet}>
-          <label htmlFor="side">Side</label>
-          <select
-            id="side"
-            value={side}
-            onChange={(e) => setSide(e.target.value as "0" | "1")}
-          >
-            <option value="0">YES — goal-setter hits it</option>
-            <option value="1">NO — they miss</option>
-          </select>
-
-          <label htmlFor="amount">Bet amount (SUI)</label>
-          <input
-            id="amount"
-            type="number"
-            min="0.01"
-            step="0.01"
-            value={amountSui}
-            onChange={(e) => setAmountSui(e.target.value)}
-            required
-          />
-
-          <button type="submit" className="primary" disabled={busy || !account}>
-            {busy ? "Submitting…" : "Place bet"}
-          </button>
-        </form>
-      )}
-
-      {detail.market.status === "resolved" && (
-        <section className="card">
-          <button
-            type="button"
-            className="primary"
-            disabled={busy || !account}
-            onClick={claimWinnings}
-          >
-            Claim winnings
-          </button>
+        <section
+          className={`ledger ${detail.market.status === "resolved" ? "ledger--settled" : detail.market.status === "locked" ? "ledger--warn" : ""}`}
+        >
+          <div className="ledger__inner">
+            <StatusPill status={detail.market.status} />
+            <p className="mono" style={{ margin: "0.75rem 0" }}>
+              Goal {detail.market.goalId.slice(0, 10)}…
+            </p>
+            <OddsLine
+              yesPool={detail.market.yesPool}
+              noPool={detail.market.noPool}
+              yesToNo={detail.impliedOdds?.yesToNo}
+            />
+            <p className="muted" style={{ marginTop: "0.75rem" }}>
+              Locks {new Date(Number(detail.market.lockAt)).toLocaleString()}
+            </p>
+          </div>
         </section>
-      )}
 
-      {status && <p className="muted">{status}</p>}
+        {detail.market.status === "open" && (
+          <form className="ledger" onSubmit={placeBet}>
+            <div className="ledger__inner">
+              <p className="form-section__label">Place a bet</p>
+              <label htmlFor="side">Your side</label>
+              <select
+                id="side"
+                value={side}
+                onChange={(e) => setSide(e.target.value as "0" | "1")}
+              >
+                <option value="0">YES — goal-setter hits it</option>
+                <option value="1">NO — they miss</option>
+              </select>
+
+              <label htmlFor="amount">Bet amount (test SUI)</label>
+              <input
+                id="amount"
+                type="number"
+                min="0.01"
+                step="0.01"
+                value={amountSui}
+                onChange={(e) => setAmountSui(e.target.value)}
+                required
+              />
+
+              <button type="submit" className="primary" disabled={busy || !account}>
+                {busy ? "Submitting…" : "Place bet"}
+              </button>
+            </div>
+          </form>
+        )}
+
+        {detail.market.status === "resolved" && (
+          <section className="ledger ledger--settled">
+            <div className="ledger__inner">
+              <button
+                type="button"
+                className="primary"
+                disabled={busy || !account}
+                onClick={claimWinnings}
+              >
+                {busy ? "Claiming…" : "Claim winnings"}
+              </button>
+            </div>
+          </section>
+        )}
+
+        {status && <p className="status-msg">{status}</p>}
       </main>
     </>
   );

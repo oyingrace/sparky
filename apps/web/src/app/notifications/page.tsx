@@ -1,6 +1,8 @@
 "use client";
 
 import { AppNav } from "@/components/AppNav";
+import { EmptyState } from "@/components/EmptyState";
+import { PageHeader } from "@/components/PageHeader";
 import { useCurrentAccount } from "@mysten/dapp-kit-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -35,26 +37,35 @@ export default function NotificationsPage() {
     <>
       <AppNav />
       <main>
-        <h1 style={{ marginTop: 0 }}>Alerts</h1>
-        <p className="muted">
-          Check-in reminders, market lock warnings, settlement results, and
-          claimable rewards. Push/email hooks can subscribe to these events
-          later.
-        </p>
+        <PageHeader
+          eyebrow="Settle"
+          title="Alerts"
+          lead="Deadlines, market locks, settlement results, and claimable rewards."
+        />
 
         {!account ? (
-          <p className="muted">Connect wallet to see your alerts.</p>
+          <EmptyState
+            title="Connect to see alerts"
+            body="Sign in to get reminders before check-ins close and markets lock."
+          />
         ) : notifications.length === 0 ? (
-          <p className="muted">Nothing to act on right now.</p>
+          <EmptyState
+            title="Nothing to act on"
+            body="When a deadline approaches or a market resolves, alerts will show here."
+            actionLabel="Browse markets"
+            actionHref="/markets"
+          />
         ) : (
           notifications.map((n) => (
             <article
               key={n.id}
-              className={`card notification-${n.priority}`}
+              className={`ledger notification-${n.priority}`}
             >
-              <strong>{n.title}</strong>
-              <p className="muted">{n.body}</p>
-              {n.href && <Link href={n.href}>Take action →</Link>}
+              <div className="ledger__inner">
+                <strong>{n.title}</strong>
+                <p className="muted">{n.body}</p>
+                {n.href && <Link href={n.href}>Take action</Link>}
+              </div>
             </article>
           ))
         )}

@@ -1,6 +1,8 @@
 "use client";
 
 import { AppNav } from "@/components/AppNav";
+import { EmptyState } from "@/components/EmptyState";
+import { PageHeader } from "@/components/PageHeader";
 import { useCurrentAccount, useDAppKit } from "@mysten/dapp-kit-react";
 import { Transaction } from "@mysten/sui/transactions";
 import { useEffect, useState } from "react";
@@ -45,7 +47,7 @@ export default function PoolClaimPage() {
       });
       const result = await dAppKit.signAndExecuteTransaction({ transaction: tx });
       if (result.$kind === "FailedTransaction") {
-        throw new Error(result.FailedTransaction.status.error?.message ?? "Tx failed");
+        throw new Error(result.FailedTransaction.status.error?.message ?? "Transaction failed");
       }
       setStatus(`Reward claimed: ${result.Transaction.digest}`);
     } catch (err) {
@@ -59,31 +61,58 @@ export default function PoolClaimPage() {
     <>
       <AppNav />
       <main>
-        <h1 style={{ marginTop: 0 }}>Community Pool</h1>
+        <PageHeader
+          eyebrow="Settle"
+          title="Community pool"
+          lead="When goals are missed, forfeited stakes feed the pool. Honored users share rewards each epoch."
+        />
 
-        <section className="card">
-        <p className="muted">
-          Epoch {epoch?.epochId ?? "—"} · Forfeited pool:{" "}
-          {epoch ? (Number(epoch.forfeitedTotal) / 1e9).toFixed(4) : "0"} SUI
-        </p>
-        {myShare ? (
-          <p>
-            Your share: {(Number(myShare.amount) / 1e9).toFixed(4)} SUI
-          </p>
-        ) : (
-          <p className="muted">
-            No published claim for your address this epoch yet.
-          </p>
-        )}
-        <button
-          type="button"
-          className="primary"
-          disabled={busy || !account || !myShare}
-          onClick={claimReward}
-        >
-          {busy ? "Claiming…" : "Claim epoch reward"}
-        </button>
-        {status && <p className="muted">{status}</p>}
+        <section className="ledger ledger--settled">
+          <div className="ledger__inner">
+            <div className="stat-grid">
+              <div className="stat">
+                <div className="stat-label">Current epoch</div>
+                <div className="stat-value">{epoch?.epochId ?? "—"}</div>
+              </div>
+              <div className="stat">
+                <div className="stat-label">Forfeited pool</div>
+                <div className="stat-value stat-value--mono">
+                  {epoch
+                    ? `${(Number(epoch.forfeitedTotal) / 1e9).toFixed(4)} SUI`
+                    : "—"}
+                </div>
+              </div>
+            </div>
+
+            {!account ? (
+              <EmptyState
+                title="Connect to claim"
+                body="Sign in to see if you have a published reward for this epoch."
+              />
+            ) : myShare ? (
+              <>
+                <p style={{ margin: "1.25rem 0" }}>
+                  Your share:{" "}
+                  <span className="mono">
+                    {(Number(myShare.amount) / 1e9).toFixed(4)} SUI
+                  </span>
+                </p>
+                <button
+                  type="button"
+                  className="primary"
+                  disabled={busy}
+                  onClick={claimReward}
+                >
+                  {busy ? "Claiming…" : "Claim epoch reward"}
+                </button>
+              </>
+            ) : (
+              <p className="muted" style={{ marginTop: "1.25rem" }}>
+                No published claim for your address this epoch.
+              </p>
+            )}
+            {status && <p className="status-msg">{status}</p>}
+          </div>
         </section>
       </main>
     </>

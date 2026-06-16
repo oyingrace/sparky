@@ -1,6 +1,8 @@
 "use client";
 
 import { AppNav } from "@/components/AppNav";
+import { PageHeader } from "@/components/PageHeader";
+import { StatusPill } from "@/components/StatusPill";
 import { useCurrentAccount, useDAppKit } from "@mysten/dapp-kit-react";
 import { Transaction } from "@mysten/sui/transactions";
 import { useParams } from "next/navigation";
@@ -63,7 +65,7 @@ export default function CheckInPage() {
 
       if (!verdict.success) {
         setStatus(
-          `Verifier rejected (${verdict.stage}): ${verdict.reasoning ?? verdict.flags?.join(", ")}`,
+          `Proof rejected (${verdict.stage}): ${verdict.reasoning ?? verdict.flags?.join(", ")}`,
         );
         return;
       }
@@ -83,7 +85,7 @@ export default function CheckInPage() {
 
       const result = await dAppKit.signAndExecuteTransaction({ transaction: tx });
       if (result.$kind === "FailedTransaction") {
-        throw new Error(result.FailedTransaction.status.error?.message ?? "Tx failed");
+        throw new Error(result.FailedTransaction.status.error?.message ?? "Transaction failed");
       }
 
       setStatus(
@@ -100,27 +102,36 @@ export default function CheckInPage() {
     <>
       <AppNav />
       <main>
-        <h1 style={{ marginTop: 0 }}>Check in</h1>
+        <PageHeader
+          eyebrow="Prove"
+          title="Check in"
+          lead="Upload proof before your deadline. The verifier checks it, then submits the hash on-chain."
+        />
 
         {!goal ? (
           <p className="muted">Loading goal…</p>
         ) : (
-          <section className="card">
-        <p className="muted">Status: {goal.status}</p>
-        <form onSubmit={handleCheckIn}>
-          <label htmlFor="proof">Proof upload</label>
-          <input
-            id="proof"
-            type="file"
-            accept="image/*"
-            onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-            required
-          />
-          <button type="submit" className="primary" disabled={busy || !account}>
-            {busy ? "Verifying…" : "Verify & submit proof"}
-          </button>
-        </form>
-            {status && <p className="muted">{status}</p>}
+          <section className="ledger">
+            <div className="ledger__inner">
+              <StatusPill status={goal.status} />
+              <p className="mono" style={{ margin: "0.75rem 0 1.25rem" }}>
+                {goal.id.slice(0, 16)}…
+              </p>
+              <form onSubmit={handleCheckIn}>
+                <label htmlFor="proof">Proof file</label>
+                <input
+                  id="proof"
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+                  required
+                />
+                <button type="submit" className="primary" disabled={busy || !account}>
+                  {busy ? "Verifying…" : "Verify and submit proof"}
+                </button>
+              </form>
+              {status && <p className="status-msg">{status}</p>}
+            </div>
           </section>
         )}
       </main>

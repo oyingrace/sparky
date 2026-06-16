@@ -1,6 +1,7 @@
 "use client";
 
 import { AppNav } from "@/components/AppNav";
+import { PageHeader } from "@/components/PageHeader";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
@@ -53,7 +54,7 @@ export default function DashboardPage() {
       const data = await res.json();
       setAnalytics(data.analytics);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Failed to load analytics");
+      setError(e instanceof Error ? e.message : "Could not load analytics");
       setAnalytics(null);
     }
   }
@@ -66,27 +67,29 @@ export default function DashboardPage() {
     <>
       <AppNav />
       <main>
-        <h1 style={{ marginTop: 0 }}>Founder dashboard</h1>
-        <p className="muted">
-          Testnet analytics from the indexer. Set{" "}
-          <code>FOUNDER_DASHBOARD_KEY</code> on the indexer to require the key
-          below.
-        </p>
+        <PageHeader
+          eyebrow="Internal"
+          title="Founder dashboard"
+          lead="Testnet metrics from the indexer. Set FOUNDER_DASHBOARD_KEY on the indexer to require a key."
+        />
 
-        <div className="card" style={{ display: "flex", gap: "0.75rem" }}>
-          <input
-            type="password"
-            placeholder="Dashboard key (optional)"
-            value={key}
-            onChange={(e) => setKey(e.target.value)}
-            style={{ marginBottom: 0, flex: 1 }}
-          />
-          <button type="button" className="primary" onClick={load}>
-            Refresh
-          </button>
+        <div className="ledger">
+          <div className="ledger__inner card-row">
+            <input
+              type="password"
+              placeholder="Dashboard key (optional)"
+              value={key}
+              onChange={(e) => setKey(e.target.value)}
+              style={{ marginBottom: 0, flex: 1 }}
+              aria-label="Dashboard key"
+            />
+            <button type="button" className="primary" onClick={load}>
+              Refresh
+            </button>
+          </div>
         </div>
 
-        {error && <p className="muted">{error}</p>}
+        {error && <p className="status-msg">{error}</p>}
 
         {analytics && (
           <>
@@ -112,7 +115,7 @@ export default function DashboardPage() {
               </div>
               <div className="stat">
                 <div className="stat-label">Bet volume</div>
-                <div className="stat-value">
+                <div className="stat-value stat-value--mono">
                   {(Number(analytics.markets.totalVolumeMist) / 1e9).toFixed(2)}
                 </div>
               </div>
@@ -136,17 +139,23 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            <section className="card">
-              <h2 style={{ marginTop: 0 }}>Community Pool</h2>
-              <p>
-                Epoch {analytics.communityPool.currentEpochId} · Forfeited{" "}
-                {(Number(analytics.communityPool.forfeitedThisEpochMist) / 1e9).toFixed(4)}{" "}
-                SUI
-              </p>
-              <Link href="/fraud">View fraud flags →</Link>
+            <section className="ledger" style={{ marginTop: "1.5rem" }}>
+              <div className="ledger__inner">
+                <h2 className="page-title" style={{ fontSize: "1.25rem", marginBottom: "0.75rem" }}>
+                  Community pool
+                </h2>
+                <p>
+                  Epoch {analytics.communityPool.currentEpochId} · Forfeited{" "}
+                  <span className="mono">
+                    {(Number(analytics.communityPool.forfeitedThisEpochMist) / 1e9).toFixed(4)}{" "}
+                    SUI
+                  </span>
+                </p>
+                <Link href="/fraud">View integrity flags</Link>
+              </div>
             </section>
 
-            <p className="muted">
+            <p className="muted" style={{ marginTop: "1.5rem" }}>
               Updated {new Date(analytics.generatedAtMs).toLocaleString()}
             </p>
           </>

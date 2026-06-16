@@ -1,6 +1,10 @@
 "use client";
 
 import { AppNav } from "@/components/AppNav";
+import { EmptyState } from "@/components/EmptyState";
+import { OddsLine } from "@/components/OddsLine";
+import { PageHeader } from "@/components/PageHeader";
+import { StatusPill } from "@/components/StatusPill";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
@@ -52,16 +56,16 @@ export default function MarketsPage() {
     <>
       <AppNav />
       <main>
-        <h1 style={{ marginTop: 0 }}>Prediction markets</h1>
-        <p className="muted">
-          Implied odds shift until lock — payout is fixed only after lock.
-          {closingSoon > 0 && (
-            <>
-              {" "}
-              <span className="badge badge-warn">{closingSoon} closing soon</span>
-            </>
-          )}
-        </p>
+        <PageHeader
+          eyebrow="Wager"
+          title="Prediction markets"
+          lead="Odds move until lock. Final payout depends on pool sizes when betting closes."
+          action={
+            closingSoon > 0 ? (
+              <span className="pill pill--locked">{closingSoon} closing soon</span>
+            ) : undefined
+          }
+        />
 
         <div className="filters">
           <select
@@ -94,28 +98,40 @@ export default function MarketsPage() {
         </div>
 
         {markets.length === 0 ? (
-          <p className="muted">No markets match your filters.</p>
+          <EmptyState
+            title="No markets match"
+            body="Try a different filter, or create a public goal to open a market."
+            actionLabel="Create a goal"
+            actionHref="/goals/new"
+          />
         ) : (
           markets.map((m) => (
-            <article key={m.id} className="card">
-              <div className="card-row">
-                <div>
-                  <strong>Goal {m.goalId.slice(0, 10)}…</strong>
-                  <p className="muted">
-                    <span className="badge">{m.status}</span>
-                  </p>
-                  <p className="muted">
-                    YES {(Number(m.yesPool) / 1e9).toFixed(4)} · NO{" "}
-                    {(Number(m.noPool) / 1e9).toFixed(4)} SUI
-                  </p>
-                  {m.impliedOdds?.yesToNo && (
-                    <p className="muted">Implied YES:NO ≈ 1:{m.impliedOdds.yesToNo}</p>
-                  )}
-                  <p className="muted">
-                    Locks {new Date(Number(m.lockAt)).toLocaleString()}
-                  </p>
+            <article
+              key={m.id}
+              className={`ledger ${m.status === "resolved" ? "ledger--settled" : m.status === "locked" ? "ledger--warn" : ""}`}
+            >
+              <div className="ledger__inner">
+                <div className="card-row">
+                  <div>
+                    <p className="mono" style={{ margin: "0 0 0.5rem" }}>
+                      Goal {m.goalId.slice(0, 10)}…
+                    </p>
+                    <StatusPill status={m.status} />
+                    <div style={{ marginTop: "0.75rem" }}>
+                      <OddsLine
+                        yesPool={m.yesPool}
+                        noPool={m.noPool}
+                        yesToNo={m.impliedOdds?.yesToNo}
+                      />
+                    </div>
+                    <p className="muted" style={{ marginTop: "0.5rem" }}>
+                      Locks {new Date(Number(m.lockAt)).toLocaleString()}
+                    </p>
+                  </div>
+                  <Link href={`/markets/${m.id}`} className="secondary-btn">
+                    Place bet
+                  </Link>
                 </div>
-                <Link href={`/markets/${m.id}`}>Bet →</Link>
               </div>
             </article>
           ))

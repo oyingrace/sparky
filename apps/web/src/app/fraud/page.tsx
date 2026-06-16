@@ -1,6 +1,8 @@
 "use client";
 
 import { AppNav } from "@/components/AppNav";
+import { EmptyState } from "@/components/EmptyState";
+import { PageHeader } from "@/components/PageHeader";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
@@ -29,22 +31,36 @@ export default function FraudPage() {
     <>
       <AppNav />
       <main>
-        <Link href="/dashboard" className="muted">
-          ← Dashboard
-        </Link>
-        <h1 style={{ margin: "0.5rem 0 0" }}>Integrity flags</h1>
+        <PageHeader
+          eyebrow="Internal"
+          title="Integrity flags"
+          lead="Suspicious betting patterns flagged by the indexer."
+          action={
+            <Link href="/dashboard" className="secondary-btn">
+              Dashboard
+            </Link>
+          }
+        />
+
         {flags.length === 0 ? (
-          <p className="muted">No suspicious patterns flagged yet.</p>
+          <EmptyState
+            title="No flags"
+            body="When collusion or heavy-bet patterns are detected, they will appear here."
+          />
         ) : (
           flags.map((f) => (
-            <article key={f.id} className="card">
-              <span className="badge badge-warn">{f.severity}</span>{" "}
-              <strong>{f.type}</strong>
-              <p className="muted">{f.detail}</p>
-              <p className="muted">
-                Bettor {f.bettor.slice(0, 10)}… · Owner{" "}
-                {f.goalOwner.slice(0, 10)}…
-              </p>
+            <article key={f.id} className="ledger ledger--warn">
+              <div className="ledger__inner">
+                <span className="pill pill--locked">{f.severity}</span>
+                <strong style={{ display: "block", marginTop: "0.5rem" }}>
+                  {f.type}
+                </strong>
+                <p className="muted">{f.detail}</p>
+                <p className="mono muted">
+                  Bettor {f.bettor.slice(0, 10)}… · Owner{" "}
+                  {f.goalOwner.slice(0, 10)}…
+                </p>
+              </div>
             </article>
           ))
         )}
