@@ -1,0 +1,15 @@
+{
+  "name": "sparky",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "services/*"
+  ],
+  "scripts": {
+    "build:move": "cd move/sparky && sui move build",
+    "test:move": "cd move/sparky && sui move test",
+    "dev:web": "npm run dev --workspace @sparky/web",
+    "dev:indexer": "npm run dev --workspace @sparky/indexer",
+    "dev:verifier": "npm run dev --workspace @sparky/verifier"
+  }
+}

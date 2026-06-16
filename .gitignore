@@ -1,0 +1,11 @@
+node_modules/
+.next/
+dist/
+build/
+.env
+.env.local
+*.log
+.DS_Store
+move/sparky/build/
+move/sparky/Published.toml
+move/sparky/Move.lock
