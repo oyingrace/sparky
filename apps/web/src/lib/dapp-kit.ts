@@ -1,3 +1,5 @@
+import { createDAppKit } from "@mysten/dapp-kit-react";
+import { SuiGrpcClient } from "@mysten/sui/grpc";
 import testnetDeployment from "../../../deployments/testnet.json";
 
 const GRPC_URLS: Record<string, string> = {
@@ -15,9 +17,6 @@ export const CONFIG_ID =
 export const COMMUNITY_POOL_ID =
   process.env.NEXT_PUBLIC_COMMUNITY_POOL_ID ||
   testnetDeployment.communityPoolId;
-
-import { createDAppKit } from "@mysten/dapp-kit-react";
-import { SuiGrpcClient } from "@mysten/sui/grpc";
 
 export const dAppKit = createDAppKit({
   networks: ["testnet"],

@@ -2,12 +2,11 @@ module sparky::community_pool;
 
 use sparky::caps::AdminCap;
 use sui::balance::{Self, Balance};
-use sui::coin::Coin;
+use sui::coin::{Self, Coin};
 use sui::event;
 use sui::object::{Self, UID};
 use sui::sui::SUI;
 use sui::table::{Self, Table};
-use sui::transfer;
 use sui::tx_context::TxContext;
 
 /// Platform-wide pool for forfeited personal stakes.
@@ -130,6 +129,9 @@ public entry fun claim(
 public fun fund_for_testing(pool: &mut CommunityPool, payment: Coin<SUI>) {
     pool.balance.join(payment.into_balance());
 }
+
+#[error]
+const EWrongEpoch: vector<u8> = b"Epoch id does not match pool current epoch";
 #[error]
 const EMismatchedClaimLists: vector<u8> = b"Claimants and amounts vectors must match";
 #[error]
