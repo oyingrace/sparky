@@ -1,6 +1,6 @@
 import { createDAppKit } from "@mysten/dapp-kit-react";
 import { SuiGrpcClient } from "@mysten/sui/grpc";
-import testnetDeployment from "../../../deployments/testnet.json";
+import { testnetDeployment } from "@/lib/deployments";
 
 const GRPC_URLS: Record<string, string> = {
   testnet: "https://fullnode.testnet.sui.io:443",

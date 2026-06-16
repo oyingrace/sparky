@@ -4,6 +4,8 @@ import { ConnectButton } from "@mysten/dapp-kit-react/ui";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
+export const dynamic = "force-dynamic";
+
 type GoalRow = {
   id: string;
   descriptionHash: string;

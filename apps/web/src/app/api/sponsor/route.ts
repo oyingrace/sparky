@@ -1,6 +1,6 @@
 import { EnokiClient } from "@mysten/enoki";
 import { NextRequest, NextResponse } from "next/server";
-import testnetDeployment from "../../../../deployments/testnet.json";
+import { testnetDeployment } from "@/lib/deployments";
 
 const ALLOWED_TARGETS = new Set<string>([
   // Populated after publish — e.g. `${packageId}::goal::create_goal`
