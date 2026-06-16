@@ -4,6 +4,8 @@
   "upgradeCapId": "",
   "configId": "",
   "communityPoolId": "",
+  "adminCapId": "",
+  "oracleCapId": "",
   "enoki": {
     "projectId": "",
     "googleOAuthClientId": ""

@@ -1,9 +1,8 @@
 "use client";
 
-import { ConnectButton } from "@mysten/dapp-kit-react/ui";
+import { AppNav } from "@/components/AppNav";
 import { useCurrentAccount, useDAppKit } from "@mysten/dapp-kit-react";
 import { Transaction } from "@mysten/sui/transactions";
-import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { CONFIG_ID, PACKAGE_ID } from "@/lib/dapp-kit";
@@ -96,22 +95,23 @@ export default function MarketDetailPage() {
   }
 
   if (!detail) {
-    return <p className="muted">Loading market…</p>;
+    return (
+      <>
+        <AppNav />
+        <main>
+          <p className="muted">Loading market…</p>
+        </main>
+      </>
+    );
   }
 
   return (
     <>
-      <header>
-        <div>
-          <Link href="/markets" className="muted">
-            ← Markets
-          </Link>
-          <h1 style={{ margin: "0.5rem 0 0" }}>Market</h1>
-        </div>
-        <ConnectButton />
-      </header>
+      <AppNav />
+      <main>
+        <h1 style={{ marginTop: 0 }}>Market</h1>
 
-      <section className="card">
+        <section className="card">
         <p className="muted">Status: {detail.market.status}</p>
         <p className="muted">
           YES: {(Number(detail.market.yesPool) / 1e9).toFixed(4)} SUI · NO:{" "}
@@ -166,6 +166,7 @@ export default function MarketDetailPage() {
       )}
 
       {status && <p className="muted">{status}</p>}
+      </main>
     </>
   );
 }

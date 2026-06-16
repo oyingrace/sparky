@@ -4,6 +4,7 @@ import {
   type EventId,
   type SuiEvent,
 } from "@mysten/sui/jsonRpc";
+import { recordBet } from "./fraud.js";
 
 export type GoalRecord = {
   id: string;
@@ -16,6 +17,8 @@ export type GoalRecord = {
   isPublic: boolean;
   status: "active" | "resolved_success" | "resolved_failure";
   success?: boolean;
+  resolvedAtMs?: number;
+  resolvedEpochId?: number;
 };
 
 export type MarketRecord = {
@@ -32,6 +35,10 @@ export type MarketRecord = {
 const goals = new Map<string, GoalRecord>();
 const markets = new Map<string, MarketRecord>();
 const marketsByGoal = new Map<string, string>();
+const forfeituresByEpoch = new Map<number, bigint>();
+let currentEpochId = 0;
+const publishedEpochs = new Set<number>();
+const pendingClaims = new Map<string, string>();
 
 export function upsertGoal(goal: GoalRecord) {
   goals.set(goal.id, goal);
@@ -59,8 +66,36 @@ export function listPublicGoals(): GoalRecord[] {
   return [...goals.values()].filter((g) => g.isPublic);
 }
 
+export function listAllGoals(): GoalRecord[] {
+  return [...goals.values()];
+}
+
+export function listGoalsByOwner(owner: string): GoalRecord[] {
+  return [...goals.values()].filter((g) => g.owner === owner);
+}
+
 export function listMarkets(): MarketRecord[] {
   return [...markets.values()];
+}
+
+export function getCurrentEpochId(): number {
+  return currentEpochId;
+}
+
+export function getForfeitedTotalForEpoch(epochId: number): bigint {
+  return forfeituresByEpoch.get(epochId) ?? 0n;
+}
+
+export function setEpochPublished(epochId: number) {
+  publishedEpochs.add(epochId);
+}
+
+export function getPendingClaim(address: string): string | undefined {
+  return pendingClaims.get(address);
+}
+
+export function hasPendingClaims(): boolean {
+  return pendingClaims.size > 0;
 }
 
 function bytesToHex(bytes: number[] | string): string {
@@ -68,7 +103,11 @@ function bytesToHex(bytes: number[] | string): string {
   return bytes.map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
-function parseEvent(type: string, fields: Record<string, unknown>) {
+function eventTimestampMs(event: SuiEvent): number {
+  return Number(event.timestampMs ?? Date.now());
+}
+
+function parseEvent(type: string, fields: Record<string, unknown>, event: SuiEvent) {
   if (type.endsWith("::goal::GoalCreated")) {
     const goalId = String(fields.goal_id);
     upsertGoal({
@@ -93,8 +132,30 @@ function parseEvent(type: string, fields: Record<string, unknown>) {
         ...existing,
         status: success ? "resolved_success" : "resolved_failure",
         success,
+        resolvedAtMs: eventTimestampMs(event),
+        resolvedEpochId: currentEpochId,
       });
     }
+  }
+
+  if (type.endsWith("::community_pool::StakeForfeited")) {
+    const epochId = Number(fields.epoch_id);
+    const amount = BigInt(String(fields.amount));
+    forfeituresByEpoch.set(
+      epochId,
+      (forfeituresByEpoch.get(epochId) ?? 0n) + amount,
+    );
+  }
+
+  if (type.endsWith("::community_pool::EpochPublished")) {
+    const epochId = Number(fields.epoch_id);
+    publishedEpochs.add(epochId);
+    currentEpochId = epochId;
+  }
+
+  if (type.endsWith("::community_pool::RewardClaimed")) {
+    const claimant = String(fields.claimant);
+    pendingClaims.delete(claimant);
   }
 
   if (type.endsWith("::market::MarketCreated")) {
@@ -120,6 +181,15 @@ function parseEvent(type: string, fields: Record<string, unknown>) {
         noPool: String(fields.no_pool),
       });
     }
+    recordBet({
+      marketId,
+      goalId: String(fields.goal_id),
+      goalOwner: existing?.goalOwner ?? "",
+      bettor: String(fields.bettor),
+      side: Number(fields.side),
+      amount: String(fields.amount),
+      timestampMs: eventTimestampMs(event),
+    });
   }
 
   if (type.endsWith("::market::MarketLocked")) {
@@ -152,7 +222,7 @@ function parseEvent(type: string, fields: Record<string, unknown>) {
 
 export function ingestEvent(event: SuiEvent) {
   if (event.parsedJson && typeof event.parsedJson === "object") {
-    parseEvent(event.type, event.parsedJson as Record<string, unknown>);
+    parseEvent(event.type, event.parsedJson as Record<string, unknown>, event);
   }
 }
 
@@ -185,4 +255,12 @@ async function queryModuleEvents(
 export async function backfillEvents(client: SuiJsonRpcClient, packageId: string) {
   await queryModuleEvents(client, packageId, "goal");
   await queryModuleEvents(client, packageId, "market");
+  await queryModuleEvents(client, packageId, "community_pool");
+}
+
+export function setPendingClaims(shares: { address: string; amount: string }[]) {
+  pendingClaims.clear();
+  for (const s of shares) {
+    pendingClaims.set(s.address, s.amount);
+  }
 }

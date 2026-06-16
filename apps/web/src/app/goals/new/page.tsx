@@ -1,9 +1,8 @@
 "use client";
 
-import { ConnectButton } from "@mysten/dapp-kit-react/ui";
+import { AppNav } from "@/components/AppNav";
 import { useCurrentAccount, useDAppKit } from "@mysten/dapp-kit-react";
 import { Transaction } from "@mysten/sui/transactions";
-import Link from "next/link";
 import { useState } from "react";
 import {
   COMMUNITY_POOL_ID,
@@ -80,17 +79,11 @@ export default function NewGoalPage() {
 
   return (
     <>
-      <header>
-        <div>
-          <Link href="/goals" className="muted">
-            ← Goals
-          </Link>
-          <h1 style={{ margin: "0.5rem 0 0" }}>New goal</h1>
-        </div>
-        <ConnectButton />
-      </header>
+      <AppNav />
+      <main>
+        <h1 style={{ marginTop: 0 }}>New goal</h1>
 
-      <form className="card" onSubmit={handleCreate}>
+        <form className="card" onSubmit={handleCreate}>
         <label htmlFor="description">Goal description</label>
         <textarea
           id="description"
@@ -156,9 +149,10 @@ export default function NewGoalPage() {
         {status && <p className="muted">{status}</p>}
       </form>
 
-      {COMMUNITY_POOL_ID ? null : (
-        <p className="muted">Community pool ID not configured yet.</p>
-      )}
+        {COMMUNITY_POOL_ID ? null : (
+          <p className="muted">Community pool ID not configured yet.</p>
+        )}
+      </main>
     </>
   );
 }

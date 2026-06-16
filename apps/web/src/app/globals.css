@@ -20,20 +20,47 @@ body {
 
 a {
   color: #7dd3fc;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
 }
 
 main {
   max-width: 720px;
   margin: 0 auto;
-  padding: 2rem 1.25rem 4rem;
+  padding: 0 1.25rem 4rem;
 }
 
-header {
+.app-header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 1rem;
-  margin-bottom: 2rem;
+  padding: 1.25rem 1.25rem 0;
+  max-width: 720px;
+  margin: 0 auto 1.5rem;
+}
+
+.brand {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #f4f4f5;
+  text-decoration: none;
+}
+
+.nav-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.nav-active {
+  color: #fff;
+  font-weight: 600;
 }
 
 .card {
@@ -42,6 +69,57 @@ header {
   padding: 1.25rem;
   background: #111318;
   margin-bottom: 1rem;
+}
+
+.card-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.75rem;
+  margin: 1rem 0;
+}
+
+.stat {
+  background: #09090b;
+  border: 1px solid #27272a;
+  border-radius: 8px;
+  padding: 0.75rem;
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  color: #71717a;
+}
+
+.stat-value {
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: #2563eb33;
+  color: #93c5fd;
+}
+
+.badge-success {
+  background: #16653433;
+  color: #86efac;
+}
+
+.badge-warn {
+  background: #854d0e33;
+  color: #fde047;
 }
 
 label {
@@ -63,7 +141,9 @@ select {
   margin-bottom: 1rem;
 }
 
-button.primary {
+button.primary,
+a.primary-btn {
+  display: inline-block;
   background: #2563eb;
   color: white;
   border: none;
@@ -71,6 +151,7 @@ button.primary {
   padding: 0.7rem 1rem;
   font-weight: 600;
   cursor: pointer;
+  text-decoration: none;
 }
 
 button.primary:disabled {
@@ -78,7 +159,56 @@ button.primary:disabled {
   cursor: not-allowed;
 }
 
+button.secondary {
+  background: transparent;
+  color: #a1a1aa;
+  border: 1px solid #3f3f46;
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+  cursor: pointer;
+}
+
 .muted {
   color: #71717a;
   font-size: 0.875rem;
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.filters select {
+  width: auto;
+  min-width: 140px;
+  margin-bottom: 0;
+}
+
+.notification-high {
+  border-left: 3px solid #ef4444;
+}
+
+.notification-normal {
+  border-left: 3px solid #2563eb;
+}
+
+.notification-low {
+  border-left: 3px solid #52525b;
+}
+
+.history-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.history-list li {
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #27272a;
+}
+
+.history-list li:last-child {
+  border-bottom: none;
 }

@@ -9,7 +9,7 @@
     "start": "node dist/index.js"
   },
   "dependencies": {
-    "@mysten/sui": "^1.38.0",
+    "@mysten/sui": "^2.18.0",
     "express": "^5.1.0"
   },
   "devDependencies": {

@@ -1,6 +1,6 @@
 "use client";
 
-import { ConnectButton } from "@mysten/dapp-kit-react/ui";
+import { AppNav } from "@/components/AppNav";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
@@ -24,26 +24,29 @@ export default function GoalsPage() {
 
   return (
     <>
-      <header>
-        <div>
-          <Link href="/" className="muted">
-            ← Home
+      <AppNav />
+      <main>
+        <div className="card-row" style={{ marginBottom: "1rem" }}>
+          <h1 style={{ margin: 0 }}>Goals</h1>
+          <Link href="/goals/new" className="primary-btn">
+            New goal
           </Link>
-          <h1 style={{ margin: "0.5rem 0 0" }}>Goals</h1>
         </div>
-        <ConnectButton />
-      </header>
 
-      {goals.length === 0 ? (
-        <p className="muted">No indexed goals yet.</p>
-      ) : (
-        goals.map((g) => (
-          <article key={g.id} className="card">
-            <strong>{g.id}</strong>
-            <p className="muted">{g.status}</p>
-          </article>
-        ))
-      )}
+        {goals.length === 0 ? (
+          <p className="muted">No indexed goals yet.</p>
+        ) : (
+          goals.map((g) => (
+            <article key={g.id} className="card">
+              <strong>{g.id.slice(0, 16)}…</strong>
+              <p className="muted">{g.status}</p>
+              {g.status === "active" && (
+                <Link href={`/goals/${g.id}/check-in`}>Check in →</Link>
+              )}
+            </article>
+          ))
+        )}
+      </main>
     </>
   );
 }
