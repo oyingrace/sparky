@@ -30,6 +30,7 @@ export default function NewGoalPage() {
   const [description, setDescription] = useState("");
   const [stakeSui, setStakeSui] = useState("0.1");
   const [deadlineDays, setDeadlineDays] = useState("7");
+  const [isPublic, setIsPublic] = useState(false);
   const [proofType, setProofType] = useState("0");
   const [status, setStatus] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -60,7 +61,7 @@ export default function NewGoalPage() {
           tx.pure.vector("u8", hexToBytes(descriptionHash)),
           tx.pure.u8(Number(proofType)),
           tx.pure.u64(deadline),
-          tx.pure.bool(false),
+          tx.pure.bool(isPublic),
           tx.object("0x6"), // Clock shared object
         ],
       });
@@ -109,6 +110,16 @@ export default function NewGoalPage() {
           <option value="0">Photo</option>
           <option value="1">GPS</option>
           <option value="2">Webhook (stub)</option>
+        </select>
+
+        <label htmlFor="public">Make public (opens a prediction market)</label>
+        <select
+          id="public"
+          value={isPublic ? "1" : "0"}
+          onChange={(e) => setIsPublic(e.target.value === "1")}
+        >
+          <option value="0">Private</option>
+          <option value="1">Public</option>
         </select>
 
         <label htmlFor="stake">Stake (SUI, testnet)</label>

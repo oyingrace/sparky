@@ -30,6 +30,19 @@ export default function HomePage() {
       </section>
 
       <section className="card">
+        <h2 style={{ marginTop: 0 }}>Prediction markets</h2>
+        <p className="muted">
+          Bet on public goals with pari-mutuel pools. Implied odds shift until
+          lock.
+        </p>
+        <Link href="/markets">
+          <button type="button" className="primary">
+            Browse markets
+          </button>
+        </Link>
+      </section>
+
+      <section className="card">
         <h2 style={{ marginTop: 0 }}>Your goals</h2>
         <p className="muted">
           Goal history is served by the indexer once deployed. Connect wallet

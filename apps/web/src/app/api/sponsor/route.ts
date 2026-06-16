@@ -12,6 +12,8 @@ function buildAllowedTargets(): Set<string> {
   return new Set([
     `${pkg}::goal::create_goal`,
     `${pkg}::goal::submit_proof`,
+    `${pkg}::market::place_bet`,
+    `${pkg}::market::claim`,
   ]);
 }
 

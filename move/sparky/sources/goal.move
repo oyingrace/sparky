@@ -4,6 +4,7 @@ use sparky::caps::{Self, OracleCap};
 use sparky::admin::Config;
 use sparky::commitment::{Self, Commitment};
 use sparky::community_pool::CommunityPool;
+use sparky::market::{Self, Market};
 use sui::clock::Clock;
 use sui::coin::Coin;
 use sui::event;
@@ -96,6 +97,11 @@ public entry fun create_goal(
     let goal_id = object::id(&goal);
 
     let commitment = commitment::create(goal_id, owner, payment, ctx);
+
+    if (is_public) {
+        let market = market::create(goal_id, owner, lock_at, ctx);
+        transfer::share_object(market);
+    };
 
     event::emit(GoalCreated {
         goal_id,
