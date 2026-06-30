@@ -40,6 +40,10 @@ public(package) fun create(
     }
 }
 
+public(package) fun share(commitment: Commitment) {
+    transfer::share_object(commitment);
+}
+
 public fun stake_amount(commitment: &Commitment): u64 {
     commitment.stake.value()
 }

@@ -100,7 +100,7 @@ public entry fun create_goal(
 
     if (is_public) {
         let market = market::create(goal_id, owner, lock_at, ctx);
-        transfer::share_object(market);
+        market::share(market);
     };
 
     event::emit(GoalCreated {
@@ -115,7 +115,22 @@ public entry fun create_goal(
     });
 
     transfer::share_object(goal);
-    transfer::share_object(commitment);
+    commitment::share(commitment);
+}
+
+#[test_only]
+public fun is_active(goal: &Goal): bool {
+    goal.status == GoalStatus::Active
+}
+
+#[test_only]
+public fun is_resolved_success(goal: &Goal): bool {
+    goal.status == GoalStatus::ResolvedSuccess
+}
+
+#[test_only]
+public fun is_resolved_failure(goal: &Goal): bool {
+    goal.status == GoalStatus::ResolvedFailure
 }
 
 public entry fun submit_proof(

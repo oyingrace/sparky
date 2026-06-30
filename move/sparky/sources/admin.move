@@ -37,7 +37,7 @@ fun init(ctx: &mut TxContext) {
     caps::transfer_admin_cap(admin_cap, ctx.sender());
     caps::transfer_oracle_cap(oracle_cap, ctx.sender());
     transfer::share_object(config);
-    transfer::share_object(pool);
+    community_pool::share(pool);
 }
 
 public fun protocol_fee_bps(config: &Config): u64 {
@@ -94,6 +94,11 @@ public entry fun advance_epoch(
 const EInvalidFee: vector<u8> = b"Protocol fee must be at most 10000 bps";
 #[error]
 const EInvalidStakeBounds: vector<u8> = b"Min stake must not exceed max stake";
+
+#[test_only]
+public fun share_config_for_testing(config: Config) {
+    transfer::share_object(config);
+}
 
 #[test_only]
 public fun init_for_testing(ctx: &mut TxContext): (AdminCap, OracleCap, Config, CommunityPool) {

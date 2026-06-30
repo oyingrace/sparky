@@ -3,7 +3,8 @@ module sparky::market_tests;
 
 use sparky::admin;
 use sparky::caps::OracleCap;
-use sparky::market::{Self, Market, MarketStatus};
+use sparky::community_pool;
+use sparky::market::{Self, Market};
 use std::unit_test::assert_eq;
 use sui::clock;
 use sui::coin;
@@ -27,11 +28,11 @@ fun setup_market(): Scenario {
         let (admin_cap, oracle_cap, config, pool) = admin::init_for_testing(ctx);
         transfer::public_transfer(admin_cap, OWNER);
         transfer::public_transfer(oracle_cap, OWNER);
-        transfer::public_share_object(config);
-        transfer::public_share_object(pool);
+        admin::share_config_for_testing(config);
+        community_pool::share_for_testing(pool);
         let goal_id = object::id_from_address(GOAL_ID_ADDR);
         let market = market::create_for_testing(goal_id, OWNER, LOCK_AT, ctx);
-        transfer::public_share_object(market);
+        market::share_for_testing(market);
     };
     scenario
 }
@@ -75,7 +76,7 @@ fun winner_with_losing_pool_gets_bonus() {
     scenario.next_tx(OWNER);
     {
         let mut market = scenario.take_shared<Market>();
-        let clock = clock::create_for_testing(scenario.ctx());
+        let mut clock = clock::create_for_testing(scenario.ctx());
         clock::increment_for_testing(&mut clock, LOCK_AT);
         market::lock(&mut market, &clock);
         clock::destroy_for_testing(clock);
@@ -136,10 +137,10 @@ fun empty_market_locks_without_crash() {
     scenario.next_tx(OWNER);
     {
         let mut market = scenario.take_shared<Market>();
-        let clock = clock::create_for_testing(scenario.ctx());
+        let mut clock = clock::create_for_testing(scenario.ctx());
         clock::increment_for_testing(&mut clock, LOCK_AT);
         market::lock(&mut market, &clock);
-        assert_eq!(market.status(), MarketStatus::Locked);
+        assert!(market::is_locked(&market));
         clock::destroy_for_testing(clock);
         ts::return_shared(market);
     };

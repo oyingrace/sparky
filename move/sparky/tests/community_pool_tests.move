@@ -13,25 +13,26 @@ use sui::transfer;
 const ADMIN: address = @0xA;
 const USER: address = @0xB;
 
-fun setup(): (Scenario, AdminCap) {
+fun setup(): Scenario {
     let mut scenario = ts::begin(ADMIN);
     scenario.next_tx(ADMIN);
-    let admin_cap = {
+    {
         let ctx = scenario.ctx();
         let (admin_cap, oracle_cap, config, pool) = admin::init_for_testing(ctx);
+        transfer::public_transfer(admin_cap, ADMIN);
         transfer::public_transfer(oracle_cap, ADMIN);
-        transfer::public_share_object(config);
-        transfer::public_share_object(pool);
-        admin_cap
+        admin::share_config_for_testing(config);
+        community_pool::share_for_testing(pool);
     };
-    (scenario, admin_cap)
+    scenario
 }
 
 #[test]
 fun publish_and_claim_epoch_reward() {
-    let (mut scenario, admin_cap) = setup();
+    let mut scenario = setup();
     scenario.next_tx(ADMIN);
     {
+        let admin_cap = scenario.take_from_sender<AdminCap>();
         let mut pool = scenario.take_shared<CommunityPool>();
         let ctx = scenario.ctx();
         let deposit = coin::mint_for_testing<SUI>(100_000_000, ctx);
@@ -43,6 +44,7 @@ fun publish_and_claim_epoch_reward() {
             vector[USER],
             vector[50_000_000],
         );
+        scenario.return_to_sender(admin_cap);
         ts::return_shared(pool);
     };
     scenario.next_tx(USER);
@@ -54,13 +56,12 @@ fun publish_and_claim_epoch_reward() {
         coin::burn_for_testing(reward);
         ts::return_shared(pool);
     };
-    scenario.return_to_sender(admin_cap);
     scenario.end();
 }
 
 #[test, expected_failure(abort_code = community_pool::ENoClaim, location = community_pool)]
 fun claim_without_entry_aborts() {
-    let (mut scenario, admin_cap) = setup();
+    let mut scenario = setup();
     scenario.next_tx(USER);
     {
         let mut pool = scenario.take_shared<CommunityPool>();
@@ -69,6 +70,5 @@ fun claim_without_entry_aborts() {
         coin::burn_for_testing(reward);
         ts::return_shared(pool);
     };
-    scenario.return_to_sender(admin_cap);
     scenario.end();
 }

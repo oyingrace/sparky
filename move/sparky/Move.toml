@@ -1,6 +1,3 @@
 [package]
 name = "sparky"
 edition = "2024"
-
-[environments]
-testnet = "4c78adac"

@@ -37,7 +37,7 @@ setup() {
   docker exec "$CONTAINER_NAME" bash -lc "
     set -e
     apt-get update -qq
-    apt-get install -y -qq curl ca-certificates tar
+    apt-get install -y -qq curl ca-certificates tar git
     mkdir -p /root/.local/bin
     cd /tmp
     URL=\"https://github.com/MystenLabs/sui/releases/download/${SUI_RELEASE}/sui-${SUI_RELEASE}-ubuntu-x86_64.tgz\"
@@ -70,7 +70,7 @@ run_sui() {
     echo "Sui not installed yet. Run: ./scripts/sui-docker.sh setup"
     exit 1
   fi
-  docker exec -it "$CONTAINER_NAME" bash -lc "export PATH=\$HOME/.local/bin:\$PATH; sui $*"
+  docker exec "$CONTAINER_NAME" bash -lc "export PATH=\$HOME/.local/bin:\$PATH; sui $*"
 }
 
 case "${1:-shell}" in

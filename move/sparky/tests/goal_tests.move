@@ -4,8 +4,8 @@ module sparky::goal_tests;
 use sparky::admin;
 use sparky::caps::OracleCap;
 use sparky::commitment::Commitment;
-use sparky::community_pool::CommunityPool;
-use sparky::goal::{Self, Goal, GoalStatus};
+use sparky::community_pool::{Self, CommunityPool};
+use sparky::goal::{Self, Goal};
 use std::unit_test::assert_eq;
 use sui::clock;
 use sui::coin;
@@ -25,8 +25,8 @@ fun setup(): Scenario {
         let (admin_cap, oracle_cap, config, pool) = admin::init_for_testing(ctx);
         transfer::public_transfer(admin_cap, OWNER);
         transfer::public_transfer(oracle_cap, OWNER);
-        transfer::public_share_object(config);
-        transfer::public_share_object(pool);
+        admin::share_config_for_testing(config);
+        community_pool::share_for_testing(pool);
     };
     scenario
 }
@@ -56,7 +56,7 @@ fun create_goal_deposits_stake() {
     {
         let goal = scenario.take_shared<Goal>();
         assert_eq!(goal.owner(), OWNER);
-        assert_eq!(goal.status(), GoalStatus::Active);
+        assert!(goal::is_active(&goal));
         assert_eq!(goal.stake_amount(), STAKE);
         ts::return_shared(goal);
     };
@@ -131,7 +131,7 @@ fun settle_success_returns_stake() {
             true,
             scenario.ctx(),
         );
-        assert_eq!(goal.status(), GoalStatus::ResolvedSuccess);
+        assert!(goal::is_resolved_success(&goal));
         ts::return_shared(goal);
         ts::return_shared(pool);
         scenario.return_to_sender(oracle_cap);
@@ -175,7 +175,7 @@ fun settle_failure_forfeits_to_pool() {
             scenario.ctx(),
         );
         assert_eq!(pool.balance_value(), STAKE);
-        assert_eq!(goal.status(), GoalStatus::ResolvedFailure);
+        assert!(goal::is_resolved_failure(&goal));
         ts::return_shared(goal);
         ts::return_shared(pool);
         scenario.return_to_sender(oracle_cap);

@@ -110,6 +110,10 @@ public(package) fun create(
     market
 }
 
+public(package) fun share(market: Market) {
+    transfer::share_object(market);
+}
+
 public fun goal_id(market: &Market): ID {
     market.goal_id
 }
@@ -254,7 +258,10 @@ fun compute_claim(
         0
     } else {
         let fee_bps = config.protocol_fee_bps();
-        (s * l_total * (BPS - fee_bps)) / (w_total * BPS)
+        let numerator =
+            (s as u128) * (l_total as u128) * ((BPS - fee_bps) as u128);
+        let denominator = (w_total as u128) * (BPS as u128);
+        (numerator / denominator as u64)
     };
 
     let mut payout = win_pool_ref.split(s);
@@ -319,6 +326,16 @@ public fun create_for_testing(
     ctx: &mut TxContext,
 ): Market {
     create(goal_id, goal_owner, lock_at, ctx)
+}
+
+#[test_only]
+public fun share_for_testing(market: Market) {
+    transfer::share_object(market);
+}
+
+#[test_only]
+public fun is_locked(market: &Market): bool {
+    market.status == MarketStatus::Locked
 }
 
 #[test_only]

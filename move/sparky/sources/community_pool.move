@@ -7,6 +7,7 @@ use sui::event;
 use sui::object::{Self, UID};
 use sui::sui::SUI;
 use sui::table::{Self, Table};
+use sui::transfer;
 use sui::tx_context::TxContext;
 
 /// Platform-wide pool for forfeited personal stakes.
@@ -45,6 +46,10 @@ public(package) fun create(ctx: &mut TxContext): CommunityPool {
     }
 }
 
+public(package) fun share(pool: CommunityPool) {
+    transfer::share_object(pool);
+}
+
 public fun balance_value(pool: &CommunityPool): u64 {
     pool.balance.value()
 }
@@ -73,11 +78,9 @@ public(package) fun deposit(
 public(package) fun advance_epoch(
     pool: &mut CommunityPool,
     new_epoch_id: u64,
-    ctx: &mut TxContext,
+    _ctx: &mut TxContext,
 ) {
     assert!(pool.claims.length() == 0, EUnclaimedRewardsRemain);
-    pool.claims.drop();
-    pool.claims = table::new(ctx);
     pool.current_epoch_id = new_epoch_id;
 }
 
@@ -123,6 +126,11 @@ public entry fun claim(
         amount,
     });
     coin
+}
+
+#[test_only]
+public fun share_for_testing(pool: CommunityPool) {
+    transfer::share_object(pool);
 }
 
 #[test_only]
